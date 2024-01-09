@@ -1,0 +1,105 @@
+docker basic commands:
+----------------------
+docker build -t dev_image:v1 .
+build docker images with name
+
+docker run -p 3000:80 dev_image
+run docker images
+
+docker run -p 3000:80 -d dev_image
+This will run docker images in dattach mode
+
+docker run -p 3000:80 -d --rm dev_image
+here --rm flag will automatically remove container affter stopping it.
+
+docker run --name complete_docker -p 3000:80 dev_image
+run docker images with custom name of container
+
+docker ps -a:- lista all docker containers
+docker ps:- list all running docker containers
+
+docker rm 492aae31f742
+remove docker container with id or name or id with coma sapareted
+
+docker rmi image id or name
+remove docker image with id or name or id with coma sapareted
+
+docker image prune -a
+remove docker images which are unused including tagged images
+
+docker stop epic_napier
+stop docker container
+
+docker start epic_napier
+restart docker containers
+
+docker start -a -i epic_napier
+restart docker containers in attached mode and intractive mode
+
+docker container attach CONTAINER_NAME
+To run in attach mode.
+
+docker logs CONTAINER_NAME
+desplays past logs which is runs by the container
+
+docker image inspect IMAGE_ID
+This used to inspect the images
+
+docker cp dummy/. flamboyant_booth:/test
+copy any files and folders from local to running container
+
+docker cp flamboyant_booth:/test dummy
+copy any files and folders from running container to local
+
+===================================================================================================
+image sharing on docker hub
+----------------------------
+- create repository on docker hub like node-basic-app
+
+docker push IMAGE_NAME
+push image on docker hub
+
+1. docker push dhpanchal1995/node-basic-app
+
+2. here you get an error while pushing image, so retsgging the image
+ docker tag node-dev:latest dhpanchal1995/node-basic-app
+
+docker pull IMAGE_NAME
+this qill allways pull latest image from docker container registry
+1. docker pull dhpanchal1995/node-basic-app
+
+display logs for container
+docker logs feedback-application-volume (CONTAINER_NAME)
+
+=====================================================================================================
+volumes:
+--------
+-list all volumes
+docker volume ls
+
+- volume with name while running containers
+docker run -p 3000:80 -d --name feedback-application-volume -v feedback:/app/feedback --rm feedback-app:volume
+
+- Remove one or more volumes
+docker volume rm VOLOUME_NAME
+
+- Remove all unused local volumes
+docker volume prune
+
+- code sharing with bind mount
+docker run -p 3000:80 -d --rm --name feedback-application-volume -v feedback:/app/feedback -v "/home/tops/workspace/docker_tutorial/data-volumes-01-starting-setup:/app" -v /app/node_modules feedback-app:volume
+- here add :ro at last to make readonly volume
+---------------------------------------------------------------------------------------------------------------
+- working with enviroment variable
+- with --env & --env-file flag
+
+for --env flag:
+---------------
+docker run -p 3000:8000 --env PORT=8000 -d --rm --name feedback-application-volume -v feedback1:/app/feedback -v "/home/tops/workspace/docker_tutorial/data-volumes-01-starting-setup:/app" -v /app/node_modules feedback-app:volume
+
+for --env-file flag:
+--------------------
+docker run -p 3000:8000 --env-file ./.env -d --rm --name feedback-application-volume -v feedback1:/app/feedback -v "/home/tops/workspace/docker_tutorial/data-volumes-01-starting-setup:/app" -v /app/node_modules feedback-app:volume
+-------------------------------------------------------------------------------------------------------------
+- Argument in docker build using --buld-arg key=value
+docker build -t feedback-app:volume2 --build-arg DEFAULT_PORT=8000 .
