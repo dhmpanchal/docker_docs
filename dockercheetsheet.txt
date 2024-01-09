@@ -103,3 +103,23 @@ docker run -p 3000:8000 --env-file ./.env -d --rm --name feedback-application-vo
 -------------------------------------------------------------------------------------------------------------
 - Argument in docker build using --buld-arg key=value
 docker build -t feedback-app:volume2 --build-arg DEFAULT_PORT=8000 .
+========================================================================================
+docker networking:
+------------------
+- use "host.docker.internal" for windows or mac to communicate with local host machine services.
+- use --network=host flag for ubuntu or linux to communicate with local host machine services.
+	- docker run --network=host --name favorites --rm favorites-dev
+
+communicate container to container:
+-----------------------------------
+1. create a network
+- docker network create favorites-net
+
+- check to list networks
+- docker network ls
+
+2. run a container with network which you want to communicate with your container.
+- docker run --name mongodb -d --network favorites-net mongo
+
+3. run your container with --network flag
+- docker run --name favorites --network favorites-net --rm -d -p 3000:3000 favorites-dev:v1
