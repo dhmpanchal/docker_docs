@@ -1,31 +1,13 @@
 docker basic commands:
 ----------------------
-docker build -t dev_image:v1 .
-build docker images with name
+docker build .
+build docker image
 
 docker run -p 3000:80 dev_image
 run docker images
 
-docker run -p 3000:80 -d dev_image
-This will run docker images in dattach mode
-
-docker run -p 3000:80 -d --rm dev_image
-here --rm flag will automatically remove container affter stopping it.
-
-docker run --name complete_docker -p 3000:80 dev_image
-run docker images with custom name of container
-
 docker ps -a:- lista all docker containers
 docker ps:- list all running docker containers
-
-docker rm 492aae31f742
-remove docker container with id or name or id with coma sapareted
-
-docker rmi image id or name
-remove docker image with id or name or id with coma sapareted
-
-docker image prune -a
-remove docker images which are unused including tagged images
 
 docker stop epic_napier
 stop docker container
@@ -33,11 +15,32 @@ stop docker container
 docker start epic_napier
 restart docker containers
 
+docker run -p 3000:80 -d dev_image
+This will run docker images in dattach mode
+
 docker start -a -i epic_napier
 restart docker containers in attached mode and intractive mode
 
+docker run -p 3000:80 -it CONTAINER_NAME
+run container in intractiver mode.
+
 docker container attach CONTAINER_NAME
 To run in attach mode.
+
+docker rm 492aae31f742
+remove docker container with id or name or id with space sapareted
+
+docker container prune
+remove all stopped containers at once.
+
+docker rmi image id or name
+remove docker image with id or name or id with space sapareted
+
+docker image prune -a
+remove docker images which are unused including tagged images
+
+docker run -p 3000:80 -d --rm dev_image
+here --rm flag will automatically remove container affter stopping it.
 
 docker logs CONTAINER_NAME
 desplays past logs which is runs by the container
@@ -51,6 +54,12 @@ copy any files and folders from local to running container
 docker cp flamboyant_booth:/test dummy
 copy any files and folders from running container to local
 
+docker run --name complete_docker -p 3000:80 dev_image
+run docker images with custom name of container
+
+docker build -t dev_image:v1 .
+build docker images with name and tag
+
 ===================================================================================================
 image sharing on docker hub
 ----------------------------
@@ -59,20 +68,24 @@ image sharing on docker hub
 docker push IMAGE_NAME
 push image on docker hub
 
-1. docker push dhpanchal1995/node-basic-app
-
-2. here you get an error while pushing image, so retsgging the image
+1. here you get an error while pushing image, so retagging the image
  docker tag node-dev:latest dhpanchal1995/node-basic-app
 
+2. docker login
+- Login into docker hub
+
+3. docker push dhpanchal1995/node-basic-app
+push it again with new name
+
 docker pull IMAGE_NAME
-this qill allways pull latest image from docker container registry
+this will allways pull latest image from docker container registry
 1. docker pull dhpanchal1995/node-basic-app
 
 display logs for container
 docker logs feedback-application-volume (CONTAINER_NAME)
 
 =====================================================================================================
-volumes:
+Data & volumes:
 --------
 -list all volumes
 docker volume ls
@@ -100,6 +113,8 @@ docker run -p 3000:8000 --env PORT=8000 -d --rm --name feedback-application-volu
 for --env-file flag:
 --------------------
 docker run -p 3000:8000 --env-file ./.env -d --rm --name feedback-application-volume -v feedback1:/app/feedback -v "/home/tops/workspace/docker_tutorial/data-volumes-01-starting-setup:/app" -v /app/node_modules feedback-app:volume
+
+- use -e for add multiple envirenment variables
 -------------------------------------------------------------------------------------------------------------
 - Argument in docker build using --buld-arg key=value
 docker build -t feedback-app:volume2 --build-arg DEFAULT_PORT=8000 .
@@ -123,3 +138,58 @@ communicate container to container:
 
 3. run your container with --network flag
 - docker run --name favorites --network favorites-net --rm -d -p 3000:3000 favorites-dev:v1
+
+The containers should in same networks.
+================================================================================================
+multi container app:
+--------------------
+- Data must be persist.
+- Access should be limited.
+
+- Run mongo db container
+docker run --name mongodb --network goals-net --rm -d mongo
+
+- Run mongo with volume
+docker run --name mongodb -v data:/data/db --network goals-net --rm -d mongo
+
+- Run mongo with authentication
+docker run --name mongodb -v data:/data/db --network goals-net --rm -d -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret mongo
+- In code there is connction string is : mongodb://username:password@mongodb:27017/course-goals?authSource=admin
+
+backend app:
+------------
+- Data must be persist.
+- Live code update.
+
+- docker build -t goals-app .
+docker run --name goals-backend -p 3001:3001 --network goals-net --rm -d goals-app
+
+- Run with volume and live code update with bind mount
+docker run --name goals-backend -v /home/tops/workspace/docker_tutorial/multi_container_app/multi-01-starting-setup/backend:/app -v logs:/app/logs -v /app/node_modules -p 3001:3001 --network goals-net --rm -d goals-app
+
+frontend app:
+-------------
+docker build -t goals-frontend .
+docker run -v /home/tops/workspace/docker_tutorial/multi_container_app/multi-01-starting-setup/frontend/src:/app/src --name goals-react --rm -p 3000:3000 -it goals-frontend
+===========================================================================================
+Docker Compose:
+---------------
+- To up and running containers
+docker-compose up -d
+
+- Stop and remove containers
+docker-compose down -v[for remove volume]
+
+- build any missing images 
+docker-compose build
+===========================================================================================
+Utility container:
+------------------
+- execute commands inside running container.
+docker exec -it CONTAINER_NAME npm init
+
+- create node app without installing node in our host machine
+docker run -it -v /home/tops/workspace/docker_tutorial/utillity_container:/app node-utility npm init
+
+- run container by service name with docker-compose
+docker-compose run npm init
